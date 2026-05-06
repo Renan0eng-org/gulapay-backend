@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: foodservice_postgres
+
+    environment:
+      POSTGRES_DB: foodservice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    restart: always
+
+
+  backend:
+    build: .
+
+    container_name: foodservice_api
+
+    depends_on:
+      - postgres
+
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+      DB_URL: jdbc:postgresql://postgres:5432/foodservice
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+      JWT_SECRET: CHANGE_ME_SUPER_SECRET_123456789
+
+    ports:
+      - "8080:8080"
+
+    restart: always
+
+volumes:
+  postgres_data:
