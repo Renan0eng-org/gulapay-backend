@@ -10,6 +10,7 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
   error:
     include-message: always
 
@@ -28,6 +29,7 @@ springdoc:
     operations-sorter: method
   api-docs:
     path: /v3/api-docs
+  default-produces-media-type: application/json
 
 app:
   security:
