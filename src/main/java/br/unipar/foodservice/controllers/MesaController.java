@@ -1,6 +1,7 @@
 package br.unipar.foodservice.controllers;
 
 import br.unipar.foodservice.dtos.MesaCreateRequest;
+import br.unipar.foodservice.dtos.MesaPatchRequest;
 import br.unipar.foodservice.dtos.MesaResponse;
 import br.unipar.foodservice.dtos.MesaUpdateRequest;
 import br.unipar.foodservice.entities.Mesa;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -59,10 +61,18 @@ public class MesaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    @Operation(summary = "Atualiza uma mesa (capacidade, descrição, número, ativo).")
+    @Operation(summary = "Atualiza uma mesa (PUT — substituição completa).")
     public ResponseEntity<MesaResponse> atualizar(@PathVariable Long id,
                                                   @Valid @RequestBody MesaUpdateRequest request) {
         return ResponseEntity.ok(MesaResponse.from(service.atualizar(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @Operation(summary = "Atualização parcial. Útil para reativar via { \"ativo\": true }.")
+    public ResponseEntity<MesaResponse> patch(@PathVariable Long id,
+                                              @Valid @RequestBody MesaPatchRequest request) {
+        return ResponseEntity.ok(MesaResponse.from(service.patch(id, request)));
     }
 
     @DeleteMapping("/{id}")

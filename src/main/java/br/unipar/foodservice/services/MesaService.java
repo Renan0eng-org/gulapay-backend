@@ -1,6 +1,7 @@
 package br.unipar.foodservice.services;
 
 import br.unipar.foodservice.dtos.MesaCreateRequest;
+import br.unipar.foodservice.dtos.MesaPatchRequest;
 import br.unipar.foodservice.dtos.MesaUpdateRequest;
 import br.unipar.foodservice.entities.Mesa;
 import br.unipar.foodservice.enums.StatusMesa;
@@ -66,5 +67,27 @@ public class MesaService {
                     + ". Encerre as comandas vinculadas antes.");
         }
         mesa.setAtivo(false);
+    }
+
+    @Transactional
+    public Mesa patch(Long id, MesaPatchRequest req) {
+        Mesa mesa = buscarPorId(id);
+        if (req.numero() != null && !mesa.getNumero().equals(req.numero())) {
+            if (repository.existsByNumero(req.numero())) {
+                throw new BusinessException("Já existe outra mesa com o número '" + req.numero() + "'.");
+            }
+            mesa.setNumero(req.numero());
+        }
+        if (req.descricao() != null) mesa.setDescricao(req.descricao());
+        if (req.capacidade() != null) mesa.setCapacidade(req.capacidade());
+        if (req.ativo() != null) {
+            if (Boolean.FALSE.equals(req.ativo())
+                    && mesa.getStatus() != StatusMesa.LIVRE
+                    && mesa.getStatus() != StatusMesa.FECHADA) {
+                throw new BusinessException("Não é possível inativar uma mesa com status " + mesa.getStatus() + ".");
+            }
+            mesa.setAtivo(req.ativo());
+        }
+        return mesa;
     }
 }
