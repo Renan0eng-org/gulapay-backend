@@ -1,6 +1,7 @@
 package br.unipar.foodservice.controllers;
 
 import br.unipar.foodservice.dtos.CategoriaCreateRequest;
+import br.unipar.foodservice.dtos.CategoriaPatchRequest;
 import br.unipar.foodservice.dtos.CategoriaResponse;
 import br.unipar.foodservice.dtos.CategoriaUpdateRequest;
 import br.unipar.foodservice.entities.Categoria;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -59,10 +61,18 @@ public class CategoriaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    @Operation(summary = "Atualiza uma categoria.")
+    @Operation(summary = "Atualiza uma categoria (PUT — substituição completa).")
     public ResponseEntity<CategoriaResponse> atualizar(@PathVariable Long id,
                                                        @Valid @RequestBody CategoriaUpdateRequest request) {
         return ResponseEntity.ok(CategoriaResponse.from(service.atualizar(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @Operation(summary = "Atualização parcial. Útil para reativar via { \"ativo\": true }.")
+    public ResponseEntity<CategoriaResponse> patch(@PathVariable Long id,
+                                                   @Valid @RequestBody CategoriaPatchRequest request) {
+        return ResponseEntity.ok(CategoriaResponse.from(service.patch(id, request)));
     }
 
     @DeleteMapping("/{id}")
