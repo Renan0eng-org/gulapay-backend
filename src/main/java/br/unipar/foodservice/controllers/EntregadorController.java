@@ -1,6 +1,7 @@
 package br.unipar.foodservice.controllers;
 
 import br.unipar.foodservice.dtos.EntregadorCreateRequest;
+import br.unipar.foodservice.dtos.EntregadorPatchRequest;
 import br.unipar.foodservice.dtos.EntregadorResponse;
 import br.unipar.foodservice.dtos.EntregadorUpdateRequest;
 import br.unipar.foodservice.entities.Entregador;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -59,10 +61,18 @@ public class EntregadorController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','CAIXA')")
-    @Operation(summary = "Atualiza um entregador.")
+    @Operation(summary = "Atualiza um entregador (PUT — substituição completa).")
     public ResponseEntity<EntregadorResponse> atualizar(@PathVariable Long id,
                                                         @Valid @RequestBody EntregadorUpdateRequest request) {
         return ResponseEntity.ok(EntregadorResponse.from(service.atualizar(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CAIXA')")
+    @Operation(summary = "Atualização parcial. Útil para reativar via { \"ativo\": true }.")
+    public ResponseEntity<EntregadorResponse> patch(@PathVariable Long id,
+                                                    @Valid @RequestBody EntregadorPatchRequest request) {
+        return ResponseEntity.ok(EntregadorResponse.from(service.patch(id, request)));
     }
 
     @DeleteMapping("/{id}")

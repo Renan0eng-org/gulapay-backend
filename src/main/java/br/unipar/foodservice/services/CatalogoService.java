@@ -29,10 +29,10 @@ public class CatalogoService {
                 .filter(p -> Boolean.TRUE.equals(p.getCategoria().getAtivo()))
                 .collect(Collectors.groupingBy(p -> p.getCategoria().getId()));
 
-        return agrupados.entrySet().stream()
-                .map(e -> {
-                    var ref = e.getValue().get(0).getCategoria();
-                    var itens = e.getValue().stream()
+        return agrupados.values().stream()
+                .map(produtos -> {
+                    var ref = produtos.getFirst().getCategoria();
+                    var itens = produtos.stream()
                             .sorted(Comparator.comparing(Produto::getNome))
                             .map(CatalogoItemResponse::from)
                             .toList();

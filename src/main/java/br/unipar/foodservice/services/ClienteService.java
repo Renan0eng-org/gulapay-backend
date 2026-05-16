@@ -1,6 +1,7 @@
 package br.unipar.foodservice.services;
 
 import br.unipar.foodservice.dtos.ClienteCreateRequest;
+import br.unipar.foodservice.dtos.ClientePatchRequest;
 import br.unipar.foodservice.dtos.ClienteUpdateRequest;
 import br.unipar.foodservice.dtos.EnderecoDto;
 import br.unipar.foodservice.entities.Cliente;
@@ -86,6 +87,37 @@ public class ClienteService {
     public void inativar(Long id) {
         Cliente cliente = buscarPorId(id);
         cliente.setAtivo(false);
+    }
+
+    /**
+     * Atualização parcial. Telefone informado é re-normalizado e revalidado
+     * quanto a unicidade. Endereço, se presente, atualiza apenas os campos
+     * informados (null mantém o valor atual).
+     */
+    @Transactional
+    public Cliente patch(Long id, ClientePatchRequest req) {
+        Cliente cliente = buscarPorId(id);
+        if (req.nome() != null) cliente.setNome(req.nome());
+        if (req.telefone() != null) {
+            String tel = normalizarTelefone(req.telefone());
+            if (!cliente.getTelefone().equals(tel) && repository.existsByTelefone(tel)) {
+                throw new BusinessException("Já existe outro cliente com o telefone " + tel + ".");
+            }
+            cliente.setTelefone(tel);
+        }
+        if (req.email() != null) cliente.setEmail(req.email());
+        if (req.endereco() != null) {
+            EnderecoDto e = req.endereco();
+            if (e.logradouro()  != null) cliente.setEnderecoLogradouro(e.logradouro());
+            if (e.numero()      != null) cliente.setEnderecoNumero(e.numero());
+            if (e.complemento() != null) cliente.setEnderecoComplemento(e.complemento());
+            if (e.bairro()      != null) cliente.setEnderecoBairro(e.bairro());
+            if (e.cidade()      != null) cliente.setEnderecoCidade(e.cidade());
+            if (e.uf()          != null) cliente.setEnderecoUf(e.uf());
+            if (e.cep()         != null) cliente.setEnderecoCep(e.cep());
+        }
+        if (req.ativo() != null) cliente.setAtivo(req.ativo());
+        return cliente;
     }
 
     /**

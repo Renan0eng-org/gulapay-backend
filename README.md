@@ -4,7 +4,7 @@ API REST em Java/Spring Boot para o Sistema de Comandas e Gestão para Food Serv
 
 > Contexto, decisões de domínio e roadmap completos estão em `../CLAUDE.md` e `../ANALISE_INICIAL.md`.
 
-## Estado atual — Etapas 1.0 + 1.1 (entregues)
+## Estado atual — Sprint 0 + Sprint 1 entregues
 
 ### Etapa 1.0 — Identidade
 - Esqueleto Maven + Spring Boot 3.3.4 + Java 21.
@@ -30,6 +30,19 @@ API REST em Java/Spring Boot para o Sistema de Comandas e Gestão para Food Serv
 - Endereço do Cliente embutido na própria tabela (refatoração para 1:N na Sprint de Comanda).
 - Soft delete em todos os cadastros (campo `ativo`), preservando histórico (RNF08).
 - Testes unitários: `UsuarioService` (5 cenários), `CategoriaService` (2), `ClienteService` (3), além do `contextLoads`.
+
+### Sprint 1 — Estoque (Etapas 2.0 → 2.3)
+- Migrations `V8` a `V12` (unidade_medida com seed, insumo, lote, movimentacao_estoque, alter produto add insumo_id com **backfill automático** de Insumo-espelho para os UNITARIO existentes).
+- Cadastro `UnidadeMedida` com `tipoMedida` (MASSA/VOLUME/UNIDADE) e `fatorParaBase`. Conversão centralizada em `UnidadeMedidaService.converter()`.
+- Cadastro `Insumo` com `unidadePadrao` (FK), `estoqueMinimo` e cálculo derivado de `estoqueAtual` (soma dos lotes ativos).
+- Cadastro `Lote` com validade, `quantidadeRestante` em unidade-padrão, `custoUnitario`. Repository com query FEFO.
+- `MovimentacaoEstoque` com 6 tipos (ENTRADA_COMPRA, ENTRADA_TROCA, SAIDA_VENDA, SAIDA_PERDA_VALIDADE, SAIDA_PERDA_QUEBRA, AJUSTE_INVENTARIO).
+- Lógica FEFO em saídas com **split entre múltiplos lotes** (uma saída de 400 g pode gerar 2 movimentações se atravessar 2 lotes).
+- `SAIDA_VENDA` bloqueado via API manual — reservado para o fechamento de comanda (Sprint 2).
+- `AJUSTE_INVENTARIO` substitui o saldo do lote indicado pela quantidade informada.
+- Endpoint `GET /insumos?abaixoDoMinimo=true` para alertas operacionais (RF43).
+- `Produto` agora valida `insumoId` conforme `tipoProduto` (obrigatório para UNITARIO, proibido para COMPOSTO/COMBO).
+- Testes adicionados: `UnidadeMedidaServiceTest` (5 cenários cobrindo conversão entre unidades, mesmo tipo, tipos incompatíveis), `MovimentacaoEstoqueServiceTest` (3 cenários cobrindo bloqueio de SAIDA_VENDA, FEFO atravessando múltiplos lotes, saldo insuficiente).
 
 ## Pré-requisitos
 
@@ -120,7 +133,7 @@ Coleção pronta para Postman: `POSTMAN.md` na raiz do projeto.
 
 ## Próximas etapas
 
-- **Sprint 1** — Estoque (Insumo, Lote, Movimentação, FEFO, alerta de mínimo).
-- **Sprint 2** — Comanda (3 origens, transferência/edição/cancelamento, auditoria via `EventoItemComanda`, link WhatsApp).
+- **Sprint 2** — Comanda (3 origens, transferência/edição/cancelamento, auditoria via `EventoItemComanda`, link WhatsApp). Inclui geração automática de `SAIDA_VENDA` no fechamento, atravessando ficha técnica para os COMPOSTOS.
 - **Sprint 3** — Rateio (5 estratégias, incluindo `POR_ITEM`).
 - **Sprint 4+** — Pagamentos, Caixa, Financeiro completo, Relatórios, Impressão térmica via `.jrxml`.
+- **Sprint 5** — Ficha técnica e Combos (destrava `tipoProduto = COMPOSTO` e `COMBO`).

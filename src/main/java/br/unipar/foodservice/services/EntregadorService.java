@@ -1,6 +1,7 @@
 package br.unipar.foodservice.services;
 
 import br.unipar.foodservice.dtos.EntregadorCreateRequest;
+import br.unipar.foodservice.dtos.EntregadorPatchRequest;
 import br.unipar.foodservice.dtos.EntregadorUpdateRequest;
 import br.unipar.foodservice.entities.Entregador;
 import br.unipar.foodservice.exceptions.BusinessException;
@@ -52,6 +53,15 @@ public class EntregadorService {
     public void inativar(Long id) {
         Entregador entregador = buscarPorId(id);
         entregador.setAtivo(false);
+    }
+
+    @Transactional
+    public Entregador patch(Long id, EntregadorPatchRequest req) {
+        Entregador entregador = buscarPorId(id);
+        if (req.nome() != null) entregador.setNome(req.nome());
+        if (req.telefone() != null) entregador.setTelefone(normalizarTelefone(req.telefone()));
+        if (req.ativo() != null) entregador.setAtivo(req.ativo());
+        return entregador;
     }
 
     private String normalizarTelefone(String entrada) {

@@ -1,6 +1,7 @@
 package br.unipar.foodservice.controllers;
 
 import br.unipar.foodservice.dtos.ClienteCreateRequest;
+import br.unipar.foodservice.dtos.ClientePatchRequest;
 import br.unipar.foodservice.dtos.ClienteResponse;
 import br.unipar.foodservice.dtos.ClienteUpdateRequest;
 import br.unipar.foodservice.entities.Cliente;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -64,10 +66,18 @@ public class ClienteController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','CAIXA','GARCOM')")
-    @Operation(summary = "Atualiza um cliente.")
+    @Operation(summary = "Atualiza um cliente (PUT — substituição completa).")
     public ResponseEntity<ClienteResponse> atualizar(@PathVariable Long id,
                                                      @Valid @RequestBody ClienteUpdateRequest request) {
         return ResponseEntity.ok(ClienteResponse.from(service.atualizar(id, request)));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CAIXA','GARCOM')")
+    @Operation(summary = "Atualização parcial. Útil para reativar via { \"ativo\": true } ou ajustar só o endereço.")
+    public ResponseEntity<ClienteResponse> patch(@PathVariable Long id,
+                                                 @Valid @RequestBody ClientePatchRequest request) {
+        return ResponseEntity.ok(ClienteResponse.from(service.patch(id, request)));
     }
 
     @DeleteMapping("/{id}")

@@ -15,6 +15,8 @@ public record ProdutoResponse(
         SetorProducao setorProducao,
         Long categoriaId,
         String categoriaNome,
+        Long insumoId,
+        String insumoNome,
         Boolean ativo
 ) {
     public static ProdutoResponse from(Produto p) {
@@ -27,6 +29,8 @@ public record ProdutoResponse(
                 p.getSetorProducao(),
                 p.getCategoria().getId(),
                 p.getCategoria().getNome(),
+                p.getInsumo() == null ? null : p.getInsumo().getId(),
+                p.getInsumo() == null ? null : p.getInsumo().getNome(),
                 p.getAtivo());
     }
 }

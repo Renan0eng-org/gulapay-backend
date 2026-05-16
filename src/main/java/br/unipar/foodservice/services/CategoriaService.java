@@ -1,6 +1,7 @@
 package br.unipar.foodservice.services;
 
 import br.unipar.foodservice.dtos.CategoriaCreateRequest;
+import br.unipar.foodservice.dtos.CategoriaPatchRequest;
 import br.unipar.foodservice.dtos.CategoriaUpdateRequest;
 import br.unipar.foodservice.entities.Categoria;
 import br.unipar.foodservice.exceptions.BusinessException;
@@ -60,5 +61,25 @@ public class CategoriaService {
     public void inativar(Long id) {
         Categoria categoria = buscarPorId(id);
         categoria.setAtivo(false);
+    }
+
+    /**
+     * Atualização parcial. Cada campo nulo no request mantém o valor atual.
+     * Útil para reativar via {@code PATCH /categorias/{id}} com {@code {"ativo": true}}.
+     */
+    @Transactional
+    public Categoria patch(Long id, CategoriaPatchRequest req) {
+        Categoria categoria = buscarPorId(id);
+        if (req.nome() != null && !req.nome().equalsIgnoreCase(categoria.getNome())) {
+            repository.findByNomeIgnoreCase(req.nome())
+                    .filter(c -> !c.getId().equals(id))
+                    .ifPresent(c -> {
+                        throw new BusinessException("Já existe outra categoria com o nome '" + req.nome() + "'.");
+                    });
+            categoria.setNome(req.nome());
+        }
+        if (req.descricao() != null) categoria.setDescricao(req.descricao());
+        if (req.ativo() != null) categoria.setAtivo(req.ativo());
+        return categoria;
     }
 }
