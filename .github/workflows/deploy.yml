@@ -31,9 +31,17 @@ jobs:
       - name: Deploy on server (pull and restart)
         run: |
           docker pull ${{ secrets.DOCKERHUB_USER }}/gulapay-backend:latest
-          docker stop foodservice_api || true
-          docker rm foodservice_api || true
-          docker-compose up -d backend
+          docker stop gulapay-backend || true
+          docker rm gulapay-backend || true
+          docker run -d --name gulapay-backend \
+            -p 8080:8080 \
+            --env SPRING_PROFILES_ACTIVE=dev \
+            --env DB_URL=jdbc:postgresql://gulapay-postgres:5432/foodservice \
+            --env DB_USER=postgres \
+            --env DB_PASSWORD=postgres \
+            --env JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            ${{ secrets.DOCKERHUB_USER }}/gulapay-backend:latest
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
